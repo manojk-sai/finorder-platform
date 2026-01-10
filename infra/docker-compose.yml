@@ -14,7 +14,7 @@ services:
     depends_on:
       - zookeeper
     ports:
-      # Kafka broker for clients running on your host machine
+      # Kafka broker for clients running on host machine
       - "9092:9092"
       # Internal broker listener for containers (optional)
       - "29092:29092"
@@ -24,7 +24,7 @@ services:
 
       # Two listeners:
       # - PLAINTEXT://kafka:29092 for containers
-      # - PLAINTEXT_HOST://localhost:9092 for your Spring apps on host
+      # - PLAINTEXT_HOST://localhost:9092 for Spring apps on host
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"

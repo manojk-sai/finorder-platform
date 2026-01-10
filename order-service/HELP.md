@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'com.manoj.finorder.order-service' is invalid and this project uses 'com.manoj.finorder.order_service' instead.
+* The original package name 'com.manoj.finorder.order-service' is invalid and this project uses 'com.manoj.finorder.orderservice' instead.
 
 # Getting Started
 
