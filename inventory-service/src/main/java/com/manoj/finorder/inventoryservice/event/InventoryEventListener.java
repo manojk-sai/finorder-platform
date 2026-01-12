@@ -18,11 +18,11 @@ public class InventoryEventListener {
     public void onInventoryEvent(InventoryEvent event) {
         if (event == null || event.getEventType() == null) {return;}
         if(!"InventoryReserveRequested".equals(event.getEventType())) {return;}
-        boolean valid = event.getItems() != null && !event.getItems().isEmpty();
+        boolean valid = event.getOrderItems() != null && !event.getOrderItems().isEmpty();
         InventoryEvent response = InventoryEvent.builder()
                 .eventType(valid?"InventoryReserved":"InventoryReservationFailed")
                 .orderId(event.getOrderId())
-                .items(event.getItems())
+                .orderItems(event.getOrderItems())
                 .reason(valid?null:"Invalid Quantity")
                 .occuredAt(Instant.now())
                 .build();

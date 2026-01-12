@@ -1,6 +1,8 @@
 package com.manoj.finorder.inventoryservice.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.manoj.finorder.inventoryservice.model.InventoryItem;
+import com.mongodb.lang.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +16,17 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InventoryEvent {
+    @JsonProperty("eventType")
     private String eventType;
+    @JsonProperty("orderId")
     private String orderId;
-    private List<InventoryItem> items;
+    @JsonProperty("orderItems")
+    @Nullable
+    private List<InventoryItem> orderItems;
+    @JsonProperty("reason")
+    @Nullable
     private String reason;
+    @JsonProperty("occuredAt")
     private Instant occuredAt;
 
 }

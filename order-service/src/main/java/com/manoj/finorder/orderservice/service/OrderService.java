@@ -65,4 +65,12 @@ public class OrderService {
             return orderRepository.save(existing);
         });
     }
+
+    public Optional<Order> markReservationFailed(String orderId) {
+        return orderRepository.findById(orderId).map(existing -> {
+            existing.setStatus(OrderStatus.RESERVATION_FAILED);
+            existing.setUpdatedAt(Instant.now());
+            return orderRepository.save(existing);
+        });
+    }
 }
