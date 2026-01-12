@@ -6,13 +6,14 @@ import com.manoj.finorder.orderservice.model.Order;
 import com.manoj.finorder.orderservice.model.OrderStatus;
 import com.manoj.finorder.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -59,9 +60,11 @@ public class OrderService {
     }
 
     public Optional<Order> markReserved(String orderId) {
+        log.info("Updating order {}", orderId);
         return orderRepository.findById(orderId).map(existing -> {
             existing.setStatus(OrderStatus.RESERVED);
             existing.setUpdatedAt(Instant.now());
+            log.info("Order {} updated to status", orderId);
             return orderRepository.save(existing);
         });
     }
@@ -69,6 +72,23 @@ public class OrderService {
     public Optional<Order> markReservationFailed(String orderId) {
         return orderRepository.findById(orderId).map(existing -> {
             existing.setStatus(OrderStatus.RESERVATION_FAILED);
+            existing.setUpdatedAt(Instant.now());
+            return orderRepository.save(existing);
+        });
+    }
+
+    public Optional<Order> markPaid(String orderId) {
+       return orderRepository.findById(orderId).map(existing -> {
+            existing.setStatus(OrderStatus.PAID);
+            existing.setUpdatedAt(Instant.now());
+            return orderRepository.save(existing);
+        });
+    }
+
+
+    public Optional<Order> markPaymentFailed(String orderId) {
+        return orderRepository.findById(orderId).map(existing -> {
+            existing.setStatus(OrderStatus.PAYMENT_FAILED);
             existing.setUpdatedAt(Instant.now());
             return orderRepository.save(existing);
         });

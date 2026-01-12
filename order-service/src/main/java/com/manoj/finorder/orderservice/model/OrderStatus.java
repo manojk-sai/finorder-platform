@@ -6,5 +6,7 @@ public enum OrderStatus {
     RESERVED,
     RESERVATION_FAILED,
     COMPLETED,
-    CANCELLED
+    PAID,
+    CANCELLED,
+    PAYMENT_FAILED
 }

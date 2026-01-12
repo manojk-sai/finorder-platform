@@ -1,4 +1,4 @@
-package com.manoj.finorder.pay_ledger_service;
+package com.manoj.finorder.payledgerservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

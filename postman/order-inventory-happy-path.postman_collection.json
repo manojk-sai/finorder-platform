@@ -12,6 +12,14 @@
       "key": "orderId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "payLedgerBaseUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "paymentIntentId",
+      "value": ""
     }
   ],
   "item": [
@@ -76,12 +84,12 @@
       },
       "event": [
         {
-            "listen": "prerequest",
-            "script": {
-                "exec": [
-                "console.log('Confirming order with ID:', pm.collectionVariables.get('orderId'));"
-                ]
-            }
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.log('Confirming order with ID:', pm.collectionVariables.get('orderId'));"
+            ]
+          }
         },
         {
           "listen": "test",
@@ -125,6 +133,118 @@
               "});"
             ]
           }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create payment intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{payLedgerBaseUrl}}/payments/intents",
+              "host": [
+                "{{payLedgerBaseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "intents"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"amount\": 19.99,\n  \"currency\": \"USD\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('payment intent created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('paymentIntentId', data.id);",
+                  "pm.test('payment intent id set', () => pm.expect(data.id).to.exist);",
+                  "pm.test('payment intent status created', () => pm.expect(data.status).to.eql('CREATED'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Capture payment intent",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{payLedgerBaseUrl}}/payments/intents/{{paymentIntentId}}/capture",
+              "host": [
+                "{{payLedgerBaseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "intents",
+                "{{paymentIntentId}}",
+                "capture"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('payment intent captured', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql('CAPTURED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get payment intent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{payLedgerBaseUrl}}/payments/intents/{{paymentIntentId}}",
+              "host": [
+                "{{payLedgerBaseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "intents",
+                "{{paymentIntentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('payment intent fetched', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.id).to.eql(pm.collectionVariables.get('paymentIntentId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

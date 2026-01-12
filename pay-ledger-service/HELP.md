@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'com.manoj.finorder.pay-ledger-service' is invalid and this project uses 'com.manoj.finorder.pay_ledger_service' instead.
+* The original package name 'com.manoj.finorder.pay-ledger-service' is invalid and this project uses 'com.manoj.finorder.payledgerservice' instead.
 
 # Getting Started
 

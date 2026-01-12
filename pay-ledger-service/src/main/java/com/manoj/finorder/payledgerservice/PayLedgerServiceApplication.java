@@ -1,13 +1,13 @@
-package com.manoj.finorder.order_service;
+package com.manoj.finorder.payledgerservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OrderServiceApplication {
+public class PayLedgerServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(OrderServiceApplication.class, args);
+		SpringApplication.run(PayLedgerServiceApplication.class, args);
 	}
 
 }

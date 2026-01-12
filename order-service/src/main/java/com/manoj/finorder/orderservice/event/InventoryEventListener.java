@@ -14,7 +14,7 @@ public class InventoryEventListener{
 
     @KafkaListener(topics = "${app.kafka.topic.inventory-events:inventory-events}", groupId = "order-service-group")
     public void onInventoryEvent(InventoryEvent event) {
-        log.info("Received Inventory Event: {}", event.getEventType());
+        log.info("Received inventory event: orderId={}, eventType={}", event.getOrderId(), event.getEventType());
         if (event == null || event.getEventType() == null) {return;}
         if("InventoryReserved".equals(event.getEventType())) {
             orderService.markReserved(event.getOrderId());
