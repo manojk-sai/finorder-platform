@@ -172,7 +172,7 @@
                   "pm.test('payment intent created', () => {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "const data = pm.response.json();",
+                  "var data = pm.response.json();",
                   "pm.collectionVariables.set('paymentIntentId', data.id);",
                   "pm.test('payment intent id set', () => pm.expect(data.id).to.exist);",
                   "pm.test('payment intent status created', () => pm.expect(data.status).to.eql('CREATED'));"

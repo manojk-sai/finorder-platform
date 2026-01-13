@@ -12,9 +12,11 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class InventoryEventListener {
     private final KafkaTemplate<String, InventoryEvent> kafkaTemplate;
+    @Value("${app.kafka.topic.order-events:order-events}")
+    private String orderEventsTopic;
     @Value("${app.kafka.topic.inventory-events:inventory-events}")
     private String inventoryEventsTopic;
-    @KafkaListener(topics = "${app.kafka.topic.inventory-events:inventory-events}")
+    @KafkaListener(topics = "${app.kafka.topic.order-events:order-events}")
     public void onInventoryEvent(InventoryEvent event) {
         if (event == null || event.getEventType() == null) {return;}
         if(!"InventoryReserveRequested".equals(event.getEventType())) {return;}

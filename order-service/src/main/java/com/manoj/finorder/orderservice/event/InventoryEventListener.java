@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 public class InventoryEventListener{
     private final OrderService orderService;
 
-    @KafkaListener(topics = "${app.kafka.topic.inventory-events:inventory-events}", groupId = "order-service-group")
+    @KafkaListener(
+            topics = "${app.kafka.topic.inventory-events:inventory-events}",
+            groupId = "order-service-group",
+            containerFactory = "inventoryKafkaListenerContainerFactory")
     public void onInventoryEvent(InventoryEvent event) {
         log.info("Received inventory event: orderId={}, eventType={}", event.getOrderId(), event.getEventType());
         if (event == null || event.getEventType() == null) {return;}

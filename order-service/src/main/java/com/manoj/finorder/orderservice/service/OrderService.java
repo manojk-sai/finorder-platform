@@ -20,8 +20,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final KafkaTemplate<String, InventoryEvent> kafkaTemplate;
 
-    @Value("${app.kafka.topic.inventory-events:inventory-events}")
-    private String inventoryEventsTopic;
+    @Value("${app.kafka.topic.order-events:order-events}")
+    private String orderEventsTopic;
 
     public Order createOrder(CreateOrderRequest orderRequest) {
         Instant now = Instant.now();
@@ -54,7 +54,7 @@ public class OrderService {
                     .orderItems(saved.getItems())
                     .occuredAt(Instant.now())
                     .build();
-            kafkaTemplate.send(inventoryEventsTopic, saved.getOrderId(), event);
+            kafkaTemplate.send(orderEventsTopic, saved.getOrderId(), event);
             return saved;
         });
     }

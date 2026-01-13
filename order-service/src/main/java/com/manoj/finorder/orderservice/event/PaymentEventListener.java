@@ -10,7 +10,10 @@ import org.springframework.stereotype.Component;
 public class PaymentEventListener {
     private final OrderService orderService;
 
-    @KafkaListener(topics = "${app.kafka.topic.payment-events:payment-events}", groupId = "order-service-group")
+    @KafkaListener(
+            topics = "${app.kafka.topic.payment-events:payment-events}",
+            groupId = "order-service-group",
+            containerFactory = "paymentKafkaListenerContainerFactory")
     public void onPaymentEvent(PaymentEvent event) {
         if( event == null || event.getEventType() == null) {return;}
         if( "PaymentCaptured".equals(event.getEventType())) {
