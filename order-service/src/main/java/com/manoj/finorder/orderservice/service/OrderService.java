@@ -8,10 +8,13 @@ import com.manoj.finorder.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 @Slf4j
 @Service
@@ -23,7 +26,20 @@ public class OrderService {
     @Value("${app.kafka.topic.order-events:order-events}")
     private String orderEventsTopic;
 
-    public Order createOrder(CreateOrderRequest orderRequest) {
+    public Order createOrder(CreateOrderRequest orderRequest, String idempotencyKey) {
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            Optional<Order> existing = orderRepository.findByIdempotencyKey(idempotencyKey);
+            if (existing.isPresent()) {
+                Order order = existing.get();
+                if (!matchesRequest(order, orderRequest)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "Idempotency key reuse with different payload"
+                    );
+                }
+                return order;
+            }
+        }
         Instant now = Instant.now();
         Order order = Order.builder()
                 .customerId(orderRequest.getCustomerId())
@@ -32,6 +48,7 @@ public class OrderService {
                 .status(OrderStatus.CREATED)
                 .createdAt(now)
                 .updatedAt(now)
+                .idempotencyKey(idempotencyKey)
                 .build();
         return orderRepository.save(order);
     }
@@ -93,4 +110,12 @@ public class OrderService {
             return orderRepository.save(existing);
         });
     }
+
+    private boolean matchesRequest(Order order, CreateOrderRequest orderRequest) {
+        if(!order.getCustomerId().equals(orderRequest.getCustomerId())) {return false;}
+        List<?> existingItems = order.getItems();
+        List<?> requestItems = orderRequest.getOrderItems();
+        return existingItems != null && existingItems.equals(requestItems);
+    }
+
 }

@@ -19,6 +19,7 @@ public class Order {
     @Id
     private String orderId;
     private String customerId;
+    private String idempotencyKey;
     private OrderStatus status;
     private List<OrderItem> items;
     private Instant createdAt;

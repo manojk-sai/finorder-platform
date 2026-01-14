@@ -16,9 +16,12 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrderRequest(@Valid @RequestBody CreateOrderRequest request) {
-        Order order = orderService.createOrder(request);
-        return ResponseEntity.created(URI.create("/orders"+order.getOrderId())).body(toOrderResponse(order));
+    public ResponseEntity<OrderResponse> createOrderRequest(
+            @Valid @RequestBody CreateOrderRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
+    ) {
+        Order order = orderService.createOrder(request, idempotencyKey);
+        return ResponseEntity.created(URI.create("/orders/" + order.getOrderId())).body(toOrderResponse(order));
     }
 
     @PostMapping("/{orderId}/confirm")

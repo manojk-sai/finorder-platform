@@ -20,6 +20,18 @@
     {
       "key": "paymentIntentId",
       "value": ""
+    },
+    {
+      "key": "inventoryBaseUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "idempotencyKey",
+      "value": "chaos-dup-001"
+    },
+    {
+      "key": "dlqMessageId",
+      "value": ""
     }
   ],
   "item": [
@@ -133,6 +145,208 @@
               "});"
             ]
           }
+        }
+      ]
+    },
+    {
+      "name": "Chaos Demo",
+      "item": [
+        {
+          "name": "Trigger inventory failure (next reservation)",
+          "request": {
+            "method": "POST",
+            "header": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "url": {
+              "raw": "{{inventoryBaseUrl}}/ops/chaos/inventory/fail-next-reservation",
+              "host": [
+                "{{inventoryBaseUrl}}"
+              ],
+              "path": [
+                "ops",
+                "chaos",
+                "inventory",
+                "fail-next-reservation"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n \"reason\": \"Demo inventory failure\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Crash inventory consumer (simulate crash)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                "raw": "{{inventoryBaseUrl}}/ops/chaos/consumer-crash",
+                "host": [
+                    "{{inventoryBaseUrl}}"
+                ],
+                "path": [
+                    "ops",
+                    "chaos",
+                    "consumer-crash"
+                ]
+                },
+                "body": {
+                "mode": "raw",
+                "raw": "{\n \"durationSeconds\": 15\n}"
+                }
+            }
+        },
+        {
+          "name": "Send poison message (DLQ)",
+          "request": {
+            "method": "POST",
+            "header": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ops/chaos/poison-message",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ops",
+                "chaos",
+                "poison-message"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n \"topic\": \"inventory-events\",\n \"payload\": \"not-json\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create order (duplicate request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"cust-dup\",\n  \"orderItems\": [\n    {\n      \"sku\": \"sku-dup\",\n      \"quantity\": 1\n    }\n  ]\n}"
+            }
+          },
+        "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('duplicate request accepted', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "var data = pm.response.json();",
+                  "if (data.orderId) {",
+                  "  pm.collectionVariables.set('orderId', data.orderId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List DLQ messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ops/dlq",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ops",
+                "dlq"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('dlq list fetched', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "  var body = pm.response.json();",
+                  "  if (Array.isArray(body) && body.length > 0 && body[0].id) {",
+                  "    pm.collectionVariables.set('dlqMessageId', body[0].id);",
+                  "  }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Replay DLQ message",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                "raw": "{{baseUrl}}/ops/dlq/{{dlqMessageId}}/replay",
+                "host": [
+                    "{{baseUrl}}"
+                ],
+                "path": [
+                    "ops",
+                    "dlq",
+                    "{{dlqMessageId}}",
+                    "replay"
+                ]
+                }
+            }
+        },
+        {
+          "name": "Replay all DLQ messages",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                "raw": "{{baseUrl}}/ops/dlq/replay",
+                "host": [
+                    "{{baseUrl}}"
+                ],
+                "path": [
+                    "ops",
+                    "dlq",
+                    "replay"
+                ]
+                }
+            }
         }
       ]
     },
