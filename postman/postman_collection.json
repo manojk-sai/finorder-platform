@@ -162,7 +162,7 @@
                 }
             ],
             "url": {
-              "raw": "{{inventoryBaseUrl}}/ops/chaos/inventory/fail-next-reservation",
+              "raw": "{{inventoryBaseUrl}}/ops/chaos/inventory/fail-next",
               "host": [
                 "{{inventoryBaseUrl}}"
               ],
@@ -170,7 +170,7 @@
                 "ops",
                 "chaos",
                 "inventory",
-                "fail-next-reservation"
+                "fail-next"
               ]
             },
             "body": {
@@ -328,7 +328,29 @@
                     "replay"
                 ]
                 }
+            },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('dlq message replayed', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.json();",
+                  "pm.test('replayed message has id', () => {",
+                  "  pm.expect(body.id).to.exist;",
+                  "});",
+                  "pm.test('replayed message has topic', () => {",
+                  "  pm.expect(body.topic).to.exist;",
+                  "});",
+                  "pm.test('replayed message has payload', () => {",
+                  "  pm.expect(body.payload).to.exist;",
+                  "});"
+                ]
+              }
             }
+          ]
         },
         {
           "name": "Replay all DLQ messages",
@@ -346,7 +368,32 @@
                     "replay"
                 ]
                 }
+            },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('all dlq messages replayed', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "var body = pm.response.json();",
+                  "pm.test('response is array', () => {",
+                  "  pm.expect(Array.isArray(body)).to.be.true;",
+                  "});",
+                  "if (Array.isArray(body) && body.length > 0) {",
+                  "  pm.test('messages have required fields', () => {",
+                  "    body.forEach((msg) => {",
+                  "      pm.expect(msg.id).to.exist;",
+                  "      pm.expect(msg.topic).to.exist;",
+                  "      pm.expect(msg.payload).to.exist;",
+                  "    });",
+                  "  });",
+                  "}"
+                ]
+              }
             }
+          ]
         }
       ]
     },
