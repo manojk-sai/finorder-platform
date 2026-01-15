@@ -20,10 +20,9 @@ public class ChaosService {
     }
 
     public Optional<String> consumeFailureReason() {
-        if(failNextReservation.getAndSet(false)) {
-            return Optional.ofNullable(failNextReason.getAndSet(null));
-        }
-        return Optional.empty();
+        boolean shouldFail = failNextReservation.getAndSet(false);
+        String reason = failNextReason.getAndSet(null);
+        return shouldFail ? Optional.ofNullable(reason) : Optional.empty();
     }
 
     public void crashFor(Duration duration) {
