@@ -1,1 +1,15 @@
-com\manoj\finorder\inventory_service\InventoryServiceApplication.class
+com\manoj\finorder\inventoryservice\InventoryServiceApplication.class
+com\manoj\finorder\inventoryservice\event\InventoryEvent.class
+com\manoj\finorder\inventoryservice\event\InventoryEvent$InventoryEventBuilder.class
+com\manoj\finorder\inventoryservice\ops\ChaosService.class
+com\manoj\finorder\inventoryservice\api\OpsController.class
+com\manoj\finorder\inventoryservice\ops\FailNextRequest.class
+com\manoj\finorder\inventoryservice\config\KafkaConsumerConfig.class
+com\manoj\finorder\inventoryservice\observability\CorrelationIdProducerInterceptor.class
+com\manoj\finorder\inventoryservice\model\InventoryItem$InventoryItemBuilder.class
+com\manoj\finorder\inventoryservice\observability\CorrelationIdContext.class
+com\manoj\finorder\inventoryservice\model\InventoryItem.class
+com\manoj\finorder\inventoryservice\observability\CorrelationIdFilter.class
+com\manoj\finorder\inventoryservice\observability\CorrelationIdRecordInterceptor.class
+com\manoj\finorder\inventoryservice\event\InventoryEventListener.class
+com\manoj\finorder\inventoryservice\ops\CrashRequest.class

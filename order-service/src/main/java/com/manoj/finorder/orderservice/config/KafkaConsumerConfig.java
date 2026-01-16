@@ -1,5 +1,6 @@
 package com.manoj.finorder.orderservice.config;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.manoj.finorder.orderservice.event.InventoryEvent;
 import com.manoj.finorder.orderservice.event.PaymentEvent;
 import lombok.RequiredArgsConstructor;
@@ -27,34 +28,27 @@ public class KafkaConsumerConfig {
     @Bean
     public ConsumerFactory<String, InventoryEvent> inventoryConsumerFactory() {
         Map<String, Object> props = baseConsumerProps();
-        // value default type can be set as class name string if needed:
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.manoj.finorder.orderservice.event.InventoryEvent");
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        JsonDeserializer<InventoryEvent> valueDeserializer = new JsonDeserializer<>(InventoryEvent.class, false);
-        valueDeserializer.addTrustedPackages("*");
-        valueDeserializer.setRemoveTypeHeaders(false);
-
-        return new DefaultKafkaConsumerFactory<>(
-                props,
+        return new DefaultKafkaConsumerFactory<>(props,
                 new ErrorHandlingDeserializer<>(new StringDeserializer()),
-                new ErrorHandlingDeserializer<>(valueDeserializer)
-        );
+                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(InventoryEvent.class, false)));
+    }
+
+    @Bean
+    public ConsumerFactory<String, InventoryEvent> inventoryEventConsumerFactory() {
+        Map<String, Object> props = baseConsumerProps();
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, InventoryEvent.class);
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(InventoryEvent.class, false));
     }
 
     @Bean
     public ConsumerFactory<String, PaymentEvent> paymentConsumerFactory() {
         Map<String, Object> props = baseConsumerProps();
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.manoj.finorder.orderservice.event.PaymentEvent");
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        JsonDeserializer<PaymentEvent> valueDeserializer = new JsonDeserializer<>(PaymentEvent.class, false);
-        valueDeserializer.addTrustedPackages("*");
-        valueDeserializer.setRemoveTypeHeaders(false);
-
-        return new DefaultKafkaConsumerFactory<>(
-                props,
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, PaymentEvent.class);
+        return new DefaultKafkaConsumerFactory<>(props,
                 new ErrorHandlingDeserializer<>(new StringDeserializer()),
-                new ErrorHandlingDeserializer<>(valueDeserializer)
-        );
+                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(PaymentEvent.class, false)));
     }
 
     @Bean
@@ -71,6 +65,13 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(paymentConsumerFactory());
         factory.setCommonErrorHandler(new DefaultErrorHandler());
         return factory;
+    }
+    @Bean
+    public JsonDeserializer<InventoryEvent> jsonDeserializer() {
+        JsonDeserializer<InventoryEvent> deserializer = new JsonDeserializer<>(InventoryEvent.class);
+        deserializer.setRemoveTypeHeaders(false);
+        deserializer.addTrustedPackages("*");
+        return deserializer;
     }
 
     private Map<String, Object> baseConsumerProps() {
