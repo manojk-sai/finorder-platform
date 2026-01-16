@@ -38,6 +38,13 @@ public class PaymentIntentController {
         return ResponseEntity.ok(toResponse(paymentIntent));
     }
 
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<PaymentIntentResponse> refundPaymentIntent(@PathVariable String id) {
+        PaymentIntent paymentIntent = paymentIntentService.refundPaymentIntent(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment Intent not found"));
+        return ResponseEntity.ok(toResponse(paymentIntent));
+    }
+
     private PaymentIntentResponse toResponse(PaymentIntent paymentIntent) {
         return PaymentIntentResponse.builder()
                 .id(paymentIntent.getId())
