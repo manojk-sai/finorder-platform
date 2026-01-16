@@ -2,6 +2,7 @@ package com.manoj.finorder.inventoryservice.event;
 
 import com.manoj.finorder.inventoryservice.ops.ChaosService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Optional;
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class InventoryEventListener {
@@ -23,6 +24,7 @@ public class InventoryEventListener {
     public void onInventoryEvent(InventoryEvent event) {
         if (event == null || event.getEventType() == null) {return;}
         if(!"InventoryReserveRequested".equals(event.getEventType())) {return;}
+        log.info("inventory.reserve_requested orderId: {}", event.getOrderId());
         if(chaosService.isCrashActive()){ throw new IllegalStateException("Inventory consumer crash simulation"); }
         Optional<String> forcedFailure = chaosService.consumeFailureReason();
         boolean valid = event.getOrderItems() != null && !event.getOrderItems().isEmpty();
@@ -35,6 +37,7 @@ public class InventoryEventListener {
                 .reason(reason)
                 .occuredAt(Instant.now())
                 .build();
+        log.info("inventory.reservation_result orderId={} status={} reason={}", event.getOrderId(), response.getEventType(), reason);
         kafkaTemplate.send(inventoryEventsTopic, event.getOrderId(), response);
     }
 

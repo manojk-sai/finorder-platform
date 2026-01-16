@@ -37,6 +37,7 @@ public class OrderService {
                             "Idempotency key reuse with different payload"
                     );
                 }
+                log.info("order.idempotent_hit orderId: {} customerId: {}", order.getOrderId(), order.getCustomerId());
                 return order;
             }
         }
@@ -50,7 +51,9 @@ public class OrderService {
                 .updatedAt(now)
                 .idempotencyKey(idempotencyKey)
                 .build();
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        log.info("order.created orderId: {} customerId: {} status: {}", savedOrder.getOrderId(), savedOrder.getCustomerId(), savedOrder.getStatus());
+        return savedOrder;
     }
 
     public Optional<Order> getOrder(String orderId) {
@@ -64,6 +67,7 @@ public class OrderService {
             existing.setStatus(OrderStatus.CONFIRMED);
             existing.setUpdatedAt(Instant.now());
             Order saved = orderRepository.save(existing);
+            log.info("order.confirmed orderId:{} status:{}", saved.getOrderId(), saved.getStatus());
 
             InventoryEvent event = InventoryEvent.builder()
                     .eventType("InventoryReserveRequested")
@@ -81,8 +85,9 @@ public class OrderService {
         return orderRepository.findById(orderId).map(existing -> {
             existing.setStatus(OrderStatus.RESERVED);
             existing.setUpdatedAt(Instant.now());
-            log.info("Order {} updated to status", orderId);
-            return orderRepository.save(existing);
+            Order saved = orderRepository.save(existing);
+            log.info("order.reserved orderId={} status={}", saved.getOrderId(), saved.getStatus());
+            return saved;
         });
     }
 
@@ -90,15 +95,19 @@ public class OrderService {
         return orderRepository.findById(orderId).map(existing -> {
             existing.setStatus(OrderStatus.RESERVATION_FAILED);
             existing.setUpdatedAt(Instant.now());
-            return orderRepository.save(existing);
+            Order saved = orderRepository.save(existing);
+            log.info("order.reservation_failed orderId={} status={}", saved.getOrderId(), saved.getStatus());
+            return saved;
         });
     }
 
     public Optional<Order> markPaid(String orderId) {
-       return orderRepository.findById(orderId).map(existing -> {
+        return orderRepository.findById(orderId).map(existing -> {
             existing.setStatus(OrderStatus.PAID);
             existing.setUpdatedAt(Instant.now());
-            return orderRepository.save(existing);
+            Order saved = orderRepository.save(existing);
+            log.info("order.paid orderId={} status={}", saved.getOrderId(), saved.getStatus());
+            return saved;
         });
     }
 
@@ -107,7 +116,9 @@ public class OrderService {
         return orderRepository.findById(orderId).map(existing -> {
             existing.setStatus(OrderStatus.PAYMENT_FAILED);
             existing.setUpdatedAt(Instant.now());
-            return orderRepository.save(existing);
+            Order saved = orderRepository.save(existing);
+            log.info("order.payment_failed orderId={} status={}", saved.getOrderId(), saved.getStatus());
+            return saved;
         });
     }
 

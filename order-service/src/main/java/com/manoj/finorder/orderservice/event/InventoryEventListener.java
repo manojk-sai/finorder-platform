@@ -17,11 +17,12 @@ public class InventoryEventListener{
             groupId = "order-service-group",
             containerFactory = "inventoryKafkaListenerContainerFactory")
     public void onInventoryEvent(InventoryEvent event) {
-        log.info("Received inventory event: orderId={}, eventType={}", event.getOrderId(), event.getEventType());
         if (event == null || event.getEventType() == null) {return;}
         if("InventoryReserved".equals(event.getEventType())) {
+            log.info("inventory_event.reserved orderId: {}", event.getOrderId());
             orderService.markReserved(event.getOrderId());
         } else if("InventoryReservationFailed".equals(event.getEventType())) {
+            log.info("inventory_event.reservation_failed orderId: {} reason: {}", event.getOrderId(), event.getReason());
             orderService.markReservationFailed(event.getOrderId());
         }
     }
