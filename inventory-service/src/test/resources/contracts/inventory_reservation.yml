@@ -1,0 +1,16 @@
+description: Reserve inventory for a confirmed order and emit reservation results
+label: inventory_reserved
+input:
+  triggeredBy: triggerInventoryReserveRequested()
+outputMessage:
+  sentTo: inventory-events
+  body:
+    eventType: InventoryReserved
+    orderId: order-123
+    orderItems:
+      - sku: sku-1
+        quantity: 2
+    reason: null
+    occuredAt: $(consumer(anyIso8601WithOffset()), producer(iso8601WithOffset()))
+  headers:
+    contentType: application/json
