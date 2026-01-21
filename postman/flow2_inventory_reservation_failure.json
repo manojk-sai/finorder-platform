@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "Flow 2 - Inventory reservation failure",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8081"},
+    {"key": "orderId", "value": "", "type": "string"},
+    {"key": "payLedgerBaseUrl", "value": "http://localhost:8083"},
+    {"key": "paymentIntentId", "value": ""},
+    {"key": "inventoryBaseUrl", "value": "http://localhost:8082"},
+    {"key": "idempotencyKey", "value": "chaos-dup-001"},
+    {"key": "dlqMessageId", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Trigger inventory failure (next reservation)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {
+          "raw": "{{inventoryBaseUrl}}/ops/chaos/inventory/fail-next",
+          "host": ["{{inventoryBaseUrl}}"],
+          "path": ["ops", "chaos", "inventory", "fail-next"]
+        },
+        "body": {"mode": "raw", "raw": "{\n \"reason\": \"Demo inventory failure\"\n}"}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('inventory failure triggered', () => {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 202]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create order",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {"raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"]},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerId\": \"cust-inventory-fail\",\n  \"orderItems\": [{\"sku\": \"sku-404\",\"quantity\": 1}]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var responseData = pm.response.json();",
+              "pm.collectionVariables.set('orderId', responseData.orderId);",
+              "pm.test('order created and id set', () => {",
+              "  pm.response.to.have.status(201);",
+              "  pm.expect(responseData.orderId).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirm order",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/orders/{{orderId}}/confirm",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "{{orderId}}", "confirm"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('order confirmed', () => {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get order (expect RESERVATION_FAILED)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {"raw": "{{baseUrl}}/orders/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{orderId}}"]}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('order reservation failed', () => {",
+              "  pm.response.to.have.status(200);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.status).to.eql('RESERVATION_FAILED');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
