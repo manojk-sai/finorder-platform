@@ -1,2 +1,3 @@
-com\manoj\finorder\inventory_service\InventoryServiceApplicationTests.class
+com\manoj\finorder\inventoryservice\contract\InventoryEventContractBase.class
+com\manoj\finorder\inventoryservice\contract\ContractVerifierTest.class
 com\manoj\finorder\inventoryservice\InventoryServiceApplicationTests.class

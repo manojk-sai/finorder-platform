@@ -2,10 +2,10 @@ spring:
   kafka:
     bootstrap-servers: ${spring.embedded.kafka.brokers}
     consumer:
+      group-id: contract-consumer-tests
       auto-offset-reset: earliest
-      group-id: contract-tests
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.support.serializer.JsonSerializer
     listener:
       ack-mode: record
