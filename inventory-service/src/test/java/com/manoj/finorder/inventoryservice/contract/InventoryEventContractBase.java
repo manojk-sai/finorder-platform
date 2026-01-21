@@ -17,6 +17,7 @@ import java.util.List;
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration,"+
                 "org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration",
+        "spring.cloud.contract.verifier.messaging.type=kafka",
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "app.kafka.topic.order-events=order-events",
         "app.kafka.topic.inventory-events=inventory-events"
